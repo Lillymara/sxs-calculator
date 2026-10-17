@@ -1,0 +1,149 @@
+import type { RateUnit, SeasonTable } from "../lib/xp";
+import { seasons } from "../lib/xp";
+
+export interface Character {
+  name: string;
+  season: string;
+  level: string;
+  progressMode: "xp" | "percent";
+  currentXp: string;
+  percent: string;
+  rate: string;
+  rateUnit: RateUnit;
+  goalLevel: string;
+}
+
+interface Props {
+  character: Character;
+  onChange: (character: Character) => void;
+  onReset: () => void;
+  table: SeasonTable | undefined;
+}
+
+export function CharacterForm({ character, onChange, onReset, table }: Props) {
+  const set = <K extends keyof Character>(key: K, value: Character[K]) =>
+    onChange({ ...character, [key]: value });
+
+  return (
+    <section className="card" aria-labelledby="form-heading">
+      <div className="card-head">
+        <h2 id="form-heading">Your character</h2>
+        <button type="button" className="link-button" onClick={onReset}>
+          Clear
+        </button>
+      </div>
+
+      <form className="fields" onSubmit={(e) => e.preventDefault()}>
+        <label className="field span-2">
+          <span>Name <em>(optional)</em></span>
+          <input
+            value={character.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="Character name"
+            maxLength={40}
+          />
+        </label>
+
+        <label className="field">
+          <span>Season</span>
+          <select value={character.season} onChange={(e) => set("season", e.target.value)}>
+            {seasons.map((s) => (
+              <option key={s.season} value={s.season}>
+                Season {s.season}
+              </option>
+            ))}
+          </select>
+          {table && (
+            <small>
+              Levels {table.minLevel}–{table.maxLevel}
+            </small>
+          )}
+        </label>
+
+        <label className="field">
+          <span>Current level</span>
+          <input
+            inputMode="numeric"
+            value={character.level}
+            onChange={(e) => set("level", e.target.value)}
+            placeholder={table ? String(table.minLevel) : ""}
+          />
+        </label>
+
+        <fieldset className="field span-2">
+          <legend>Progress toward next level</legend>
+          <div className="with-toggle">
+            {character.progressMode === "xp" ? (
+              <input
+                inputMode="numeric"
+                aria-label="Current XP"
+                value={character.currentXp}
+                onChange={(e) => set("currentXp", e.target.value)}
+                placeholder="XP earned so far, e.g. 1,250,000"
+              />
+            ) : (
+              <input
+                inputMode="decimal"
+                aria-label="Percent complete"
+                value={character.percent}
+                onChange={(e) => set("percent", e.target.value)}
+                placeholder="Percent of the bar, e.g. 42.5"
+              />
+            )}
+            <div className="segmented" role="group" aria-label="Progress unit">
+              <button
+                type="button"
+                aria-pressed={character.progressMode === "xp"}
+                onClick={() => set("progressMode", "xp")}
+              >
+                XP
+              </button>
+              <button
+                type="button"
+                aria-pressed={character.progressMode === "percent"}
+                onClick={() => set("progressMode", "percent")}
+              >
+                %
+              </button>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset className="field span-2">
+          <legend>XP you earn</legend>
+          <div className="with-toggle">
+            <input
+              inputMode="decimal"
+              aria-label="XP rate"
+              value={character.rate}
+              onChange={(e) => set("rate", e.target.value)}
+              placeholder="e.g. 250,000"
+            />
+            <div className="segmented" role="group" aria-label="Rate period">
+              {(["minute", "hour", "day"] as const).map((unit) => (
+                <button
+                  key={unit}
+                  type="button"
+                  aria-pressed={character.rateUnit === unit}
+                  onClick={() => set("rateUnit", unit)}
+                >
+                  /{unit === "minute" ? "min" : unit === "hour" ? "hr" : "day"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </fieldset>
+
+        <label className="field span-2">
+          <span>Goal level <em>(optional)</em></span>
+          <input
+            inputMode="numeric"
+            value={character.goalLevel}
+            onChange={(e) => set("goalLevel", e.target.value)}
+            placeholder="Plan further ahead, e.g. 250"
+          />
+        </label>
+      </form>
+    </section>
+  );
+}
