@@ -17,31 +17,37 @@ interface Props {
   onChange: (character: Character) => void;
   onReset: () => void;
   table: SeasonTable | undefined;
+  /** Hide the name and goal-level fields (used inside the Season Planner). */
+  compact?: boolean;
 }
 
-export function CharacterForm({ character, onChange, onReset, table }: Props) {
+export function CharacterForm({ character, onChange, onReset, table, compact }: Props) {
   const set = <K extends keyof Character>(key: K, value: Character[K]) =>
     onChange({ ...character, [key]: value });
 
   return (
-    <section className="card" aria-labelledby="form-heading">
-      <div className="card-head">
-        <h2 id="form-heading">Your character</h2>
-        <button type="button" className="link-button" onClick={onReset}>
-          Clear
-        </button>
-      </div>
+    <section className={compact ? undefined : "card"} aria-labelledby={compact ? undefined : "form-heading"}>
+      {!compact && (
+        <div className="card-head">
+          <h2 id="form-heading">Your character</h2>
+          <button type="button" className="link-button" onClick={onReset}>
+            Clear
+          </button>
+        </div>
+      )}
 
       <form className="fields" onSubmit={(e) => e.preventDefault()}>
-        <label className="field span-2">
-          <span>Name <em>(optional)</em></span>
-          <input
-            value={character.name}
-            onChange={(e) => set("name", e.target.value)}
-            placeholder="Character name"
-            maxLength={40}
-          />
-        </label>
+        {!compact && (
+          <label className="field span-2">
+            <span>Name <em>(optional)</em></span>
+            <input
+              value={character.name}
+              onChange={(e) => set("name", e.target.value)}
+              placeholder="Character name"
+              maxLength={40}
+            />
+          </label>
+        )}
 
         <label className="field">
           <span>Season</span>
@@ -119,16 +125,18 @@ export function CharacterForm({ character, onChange, onReset, table }: Props) {
           <small>Check the bed in your house for your current rate.</small>
         </label>
 
-        <label className="field span-2">
-          <span>Goal level <em>(optional)</em></span>
-          <input
-            inputMode="numeric"
-            value={character.goalLevel}
-            onChange={(e) => set("goalLevel", e.target.value)}
-            placeholder="e.g. 205"
-          />
-          <small>Rough guide only: estimates more than a few levels out run long.</small>
-        </label>
+        {!compact && (
+          <label className="field span-2">
+            <span>Goal level <em>(optional)</em></span>
+            <input
+              inputMode="numeric"
+              value={character.goalLevel}
+              onChange={(e) => set("goalLevel", e.target.value)}
+              placeholder="e.g. 205"
+            />
+            <small>Rough guide only: estimates more than a few levels out run long.</small>
+          </label>
+        )}
       </form>
     </section>
   );

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 /** useState that persists to localStorage; falls back to memory if storage is unavailable. */
-export function usePersistentState<T extends object>(key: string, initial: T): [T, (value: T) => void] {
+export function usePersistentState<T extends object>(key: string, initial: T): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
     try {
       const stored = localStorage.getItem(key);
