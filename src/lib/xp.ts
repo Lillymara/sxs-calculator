@@ -32,14 +32,6 @@ export function expToNext(table: SeasonTable, level: number): number | undefined
   return table.expToNext[level - table.minLevel];
 }
 
-export type RateUnit = "minute" | "hour" | "day";
-
-const HOURS_PER_UNIT: Record<RateUnit, number> = { minute: 1 / 60, hour: 1, day: 24 };
-
-export function toXpPerHour(amount: number, unit: RateUnit): number {
-  return amount / HOURS_PER_UNIT[unit];
-}
-
 export interface CalcInput {
   table: SeasonTable;
   level: number;

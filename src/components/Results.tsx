@@ -10,6 +10,9 @@ interface Props {
 
 const fmt = (n: number) => Math.ceil(n).toLocaleString();
 
+/** Your XP rate keeps climbing as you level, so estimates past this many levels drift badly. */
+const RELIABLE_LEVELS = 5;
+
 export function Results({ character, outcome, now }: Props) {
   if (!outcome) {
     return (
@@ -62,6 +65,10 @@ export function Results({ character, outcome, now }: Props) {
           <p className="eta">
             {formatXpShort(r.goal.xpRemaining)} XP · around {formatEta(r.goal.hours, now)}
           </p>
+          <p className="note">
+            Your XP rate keeps climbing as you level, so only the next 2–{RELIABLE_LEVELS} levels are
+            close to accurate. Anything further out will likely come sooner than shown.
+          </p>
           <div className="table-wrap">
             <table>
               <thead>
@@ -73,8 +80,8 @@ export function Results({ character, outcome, now }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {r.goal.steps.map((s) => (
-                  <tr key={s.level}>
+                {r.goal.steps.map((s, i) => (
+                  <tr key={s.level} className={i >= RELIABLE_LEVELS ? "rough" : undefined}>
                     <td>{s.level}</td>
                     <td title={fmt(s.xpRemaining)}>{formatXpShort(s.xpRemaining)}</td>
                     <td>{formatDuration(s.hours)}</td>

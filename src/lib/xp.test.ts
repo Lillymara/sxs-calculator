@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculate, formatDuration, getSeason, seasons, toXpPerHour, type SeasonTable } from "./xp";
+import { calculate, formatDuration, getSeason, seasons, type SeasonTable } from "./xp";
 
 const table: SeasonTable = { season: 9, minLevel: 10, maxLevel: 12, expToNext: [100, 200, 400] };
 
@@ -33,11 +33,6 @@ describe("calculate", () => {
 });
 
 describe("helpers", () => {
-  it("converts rates to per-hour", () => {
-    expect(toXpPerHour(10, "minute")).toBe(600);
-    expect(toXpPerHour(2400, "day")).toBe(100);
-  });
-
   it("formats durations", () => {
     expect(formatDuration(0)).toBe("Ready now");
     expect(formatDuration(0.5)).toBe("30m");

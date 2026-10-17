@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CharacterForm, type Character } from "./components/CharacterForm";
 import { Results } from "./components/Results";
 import { usePersistentState } from "./lib/storage";
-import { calculate, getSeason, seasons, toXpPerHour } from "./lib/xp";
+import { calculate, getSeason, seasons } from "./lib/xp";
 
 const DEFAULT_CHARACTER: Character = {
   name: "",
@@ -12,7 +12,6 @@ const DEFAULT_CHARACTER: Character = {
   currentXp: "",
   percent: "",
   rate: "",
-  rateUnit: "hour",
   goalLevel: "",
 };
 
@@ -49,7 +48,7 @@ export default function App() {
         table,
         level,
         currentXp,
-        xpPerHour: toXpPerHour(num(character.rate), character.rateUnit),
+        xpPerHour: num(character.rate),
         goalLevel: Number.isInteger(goal) ? goal : undefined,
       })
     : undefined;

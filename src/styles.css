@@ -123,3 +123,13 @@ th { position: sticky; top: 0; background: var(--surface); color: var(--muted); 
   .fields { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
 }
+
+.note {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--accent-soft);
+  border-radius: 8px;
+}
+tr.rough td { opacity: 0.5; }

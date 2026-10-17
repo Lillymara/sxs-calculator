@@ -1,4 +1,4 @@
-import type { RateUnit, SeasonTable } from "../lib/xp";
+import type { SeasonTable } from "../lib/xp";
 import { seasons } from "../lib/xp";
 
 export interface Character {
@@ -9,7 +9,6 @@ export interface Character {
   currentXp: string;
   percent: string;
   rate: string;
-  rateUnit: RateUnit;
   goalLevel: string;
 }
 
@@ -109,30 +108,16 @@ export function CharacterForm({ character, onChange, onReset, table }: Props) {
           </div>
         </fieldset>
 
-        <fieldset className="field span-2">
-          <legend>XP you earn</legend>
-          <div className="with-toggle">
-            <input
-              inputMode="decimal"
-              aria-label="XP rate"
-              value={character.rate}
-              onChange={(e) => set("rate", e.target.value)}
-              placeholder="e.g. 250,000"
-            />
-            <div className="segmented" role="group" aria-label="Rate period">
-              {(["minute", "hour", "day"] as const).map((unit) => (
-                <button
-                  key={unit}
-                  type="button"
-                  aria-pressed={character.rateUnit === unit}
-                  onClick={() => set("rateUnit", unit)}
-                >
-                  /{unit === "minute" ? "min" : unit === "hour" ? "hr" : "day"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </fieldset>
+        <label className="field span-2">
+          <span>XP per hour</span>
+          <input
+            inputMode="decimal"
+            value={character.rate}
+            onChange={(e) => set("rate", e.target.value)}
+            placeholder="e.g. 250,000"
+          />
+          <small>Check the bed in your house for your current rate.</small>
+        </label>
 
         <label className="field span-2">
           <span>Goal level <em>(optional)</em></span>
@@ -140,8 +125,9 @@ export function CharacterForm({ character, onChange, onReset, table }: Props) {
             inputMode="numeric"
             value={character.goalLevel}
             onChange={(e) => set("goalLevel", e.target.value)}
-            placeholder="Plan further ahead, e.g. 250"
+            placeholder="e.g. 205"
           />
+          <small>Rough guide only: estimates more than a few levels out run long.</small>
         </label>
       </form>
     </section>
