@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculate, formatDuration, getSeason, seasons, type SeasonTable } from "./xp";
+import { calculate, formatDuration, getSeason, parseAmount, seasons, type SeasonTable } from "./xp";
 
 const table: SeasonTable = { season: 9, minLevel: 10, maxLevel: 12, expToNext: [100, 200, 400] };
 
@@ -33,6 +33,16 @@ describe("calculate", () => {
 });
 
 describe("helpers", () => {
+  it("parses in-game short numbers", () => {
+    expect(parseAmount("4.13k")).toBeCloseTo(4130);
+    expect(parseAmount("1.52B")).toBeCloseTo(1.52e9);
+    expect(parseAmount("340M")).toBe(340e6);
+    expect(parseAmount("1,250,000")).toBe(1250000);
+    expect(parseAmount(" 12 ")).toBe(12);
+    expect(parseAmount("")).toBeNaN();
+    expect(parseAmount("abc")).toBeNaN();
+  });
+
   it("formats durations", () => {
     expect(formatDuration(0)).toBe("Ready now");
     expect(formatDuration(0.5)).toBe("30m");

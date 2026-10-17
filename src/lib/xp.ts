@@ -77,13 +77,13 @@ export function calculate(input: CalcInput): CalcOutcome {
     };
   }
   if (!Number.isFinite(currentXp) || currentXp < 0) {
-    return { ok: false, error: "Current XP must be zero or more." };
+    return { ok: false, error: "Enter your current XP as shown in game, like 4.13k or 1.52B." };
   }
   if (currentXp > required) {
     return { ok: false, error: `Level ${level} only needs ${required.toLocaleString()} XP.` };
   }
   if (!Number.isFinite(xpPerHour) || xpPerHour <= 0) {
-    return { ok: false, error: "Enter how much XP you earn." };
+    return { ok: false, error: "Enter your XP per hour, like 150M." };
   }
 
   const xpRemaining = required - currentXp;
@@ -118,6 +118,22 @@ export function calculate(input: CalcInput): CalcOutcome {
   }
 
   return { ok: true, result };
+}
+
+const SUFFIXES: Record<string, number> = { k: 1e3, m: 1e6, b: 1e9, t: 1e12 };
+
+/**
+ * Parses numbers the way players type them: "4.13k", "1.52B", "250,000".
+ * Returns NaN for blank or unreadable input.
+ */
+export function parseAmount(value: string): number {
+  const match = value
+    .replace(/[,\s_]/g, "")
+    .toLowerCase()
+    .match(/^(\d*\.?\d+)([kmbt]?)$/);
+  if (!match) return NaN;
+  const [, digits, suffix] = match;
+  return Number(digits) * (suffix ? SUFFIXES[suffix] : 1);
 }
 
 /** "3d 4h 12m" style duration. */

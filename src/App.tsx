@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CharacterForm, type Character } from "./components/CharacterForm";
 import { Results } from "./components/Results";
 import { usePersistentState } from "./lib/storage";
-import { calculate, getSeason, seasons } from "./lib/xp";
+import { calculate, getSeason, parseAmount as num, seasons } from "./lib/xp";
 
 const DEFAULT_CHARACTER: Character = {
   name: "",
@@ -14,11 +14,6 @@ const DEFAULT_CHARACTER: Character = {
   rate: "",
   goalLevel: "",
 };
-
-/** Parses a user-typed number, allowing thousands separators like "1,234,567". */
-function num(value: string): number {
-  return value.trim() === "" ? NaN : Number(value.replace(/[,\s_]/g, ""));
-}
 
 export default function App() {
   const [character, setCharacter] = usePersistentState<Character>("sxs.character", DEFAULT_CHARACTER);
@@ -34,12 +29,14 @@ export default function App() {
   const level = num(character.level);
   const required = table && table.expToNext[level - table.minLevel];
 
+  // A blank progress field means "just levelled"; anything else must parse.
+  const orZero = (value: string) => (value.trim() === "" ? 0 : num(value));
   const currentXp =
     character.progressMode === "percent"
       ? required !== undefined
-        ? (required * (num(character.percent) || 0)) / 100
+        ? (required * orZero(character.percent)) / 100
         : NaN
-      : num(character.currentXp) || 0;
+      : orZero(character.currentXp);
 
   const goal = num(character.goalLevel);
   const ready = table && character.level !== "" && character.rate !== "";

@@ -74,11 +74,11 @@ export function CharacterForm({ character, onChange, onReset, table }: Props) {
           <div className="with-toggle">
             {character.progressMode === "xp" ? (
               <input
-                inputMode="numeric"
+                inputMode="text"
                 aria-label="Current XP"
                 value={character.currentXp}
                 onChange={(e) => set("currentXp", e.target.value)}
-                placeholder="XP earned so far, e.g. 1,250,000"
+                placeholder="As shown in game, e.g. 4.13k or 1.52B"
               />
             ) : (
               <input
@@ -111,10 +111,10 @@ export function CharacterForm({ character, onChange, onReset, table }: Props) {
         <label className="field span-2">
           <span>XP per hour</span>
           <input
-            inputMode="decimal"
+            inputMode="text"
             value={character.rate}
             onChange={(e) => set("rate", e.target.value)}
-            placeholder="e.g. 250,000"
+            placeholder="e.g. 150M"
           />
           <small>Check the bed in your house for your current rate.</small>
         </label>
