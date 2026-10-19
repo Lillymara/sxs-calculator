@@ -74,9 +74,9 @@ export const STAMINA_YIELD_DEFAULTS: Record<number, { rola: number; ore: number;
 };
 export const DEFAULT_EXP_PER_TREAT = 50;
 
-/** Blank or unreadable -> fallback; otherwise the parsed number. */
+/** Blank or unreadable -> fallback; otherwise the parsed number. A leading "+" (as relics show) is fine. */
 export const n = (value: string, fallback = 0) => {
-  const v = parseAmount(value);
+  const v = parseAmount(value.trim().replace(/^\+/, ""));
   return Number.isFinite(v) ? v : fallback;
 };
 

@@ -266,6 +266,19 @@ details.advanced summary { cursor: pointer; color: var(--accent); font-size: 0.8
   font-size: 0.8rem;
 }
 input.over-cap { border-color: var(--error); color: var(--error); }
+input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 22%, transparent); }
+
+/* ---- Silly goat (impossible planner inputs) ---- */
+.goat-card { text-align: center; }
+.goat-card .silly-goat { width: min(200px, 60%); height: auto; display: block; margin: 0 auto 8px; animation: goat-wobble 2.4s ease-in-out infinite; transform-origin: 50% 85%; }
+.goat-title { margin: 2px 0 8px; font-size: 1.6rem; letter-spacing: -0.02em; }
+.goat-reasons { text-align: left; margin: 12px 0; padding: 12px 14px 12px 32px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); display: grid; gap: 8px; }
+.goat-reasons li { line-height: 1.45; }
+.goat-reasons li::marker { content: "🐐 "; }
+.goat-bar { background: linear-gradient(135deg, #f59e0b, #ef4444) !important; }
+.goat-bar, .goat-bar b, .goat-bar span { color: #fff !important; }
+@keyframes goat-wobble { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg) translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .goat-card .silly-goat { animation: none; } }
 
 /* ---- Input tables ---- */
 .table-wrap.flat { max-height: none; }

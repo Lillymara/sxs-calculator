@@ -15,6 +15,8 @@ import {
 } from "./form";
 import { SlotTable } from "./SlotTable";
 import { Summary } from "./Summary";
+import { findProblems } from "./validate";
+import { GoatCard } from "../../components/SillyGoat";
 
 interface Props {
   character: Character;
@@ -47,6 +49,8 @@ export function PlannerPage({ character, onCharacterChange, form, onChange, resu
   const caps = result?.caps;
   const t = result?.time;
   const staminaDefaults = STAMINA_YIELD_DEFAULTS[season];
+  const problems = findProblems(character, form, rule, table);
+  const silly = problems.messages.length > 0;
   const range = (count: number, label: (i: number) => string) => Array.from({ length: count }, (_, i) => label(i));
 
   const capNote = (cap: number | null | undefined, prefix = "") =>
@@ -197,25 +201,25 @@ export function PlannerPage({ character, onCharacterChange, form, onChange, resu
           title="Gear · Ore & Rola"
           aside={weightChip(rule?.weights.gear)}
         >
-          <SlotTable names={GEAR_NAMES} rows={form.gear} onChange={(rows) => set("gear", rows)} baseline={String(floor)} cap={caps?.gear ?? null} />
+          <SlotTable names={GEAR_NAMES} rows={form.gear} onChange={(rows) => set("gear", rows)} invalid={problems.slots.gear} baseline={String(floor)} cap={caps?.gear ?? null} />
           {capNote(caps?.gear)}
           {fillMinimum("gear", "gear", "gear")}
         </Section>
 
         <Section step={5} title="Skills · Essence" aside={weightChip(rule?.weights.skill)}>
-          <SlotTable names={range(8, (i) => `Skill ${i + 1}`)} rows={form.skills} onChange={(rows) => set("skills", rows)} baseline={String(floor)} cap={caps?.skill ?? null} />
+          <SlotTable names={range(8, (i) => `Skill ${i + 1}`)} rows={form.skills} onChange={(rows) => set("skills", rows)} invalid={problems.slots.skills} baseline={String(floor)} cap={caps?.skill ?? null} />
           {capNote(caps?.skill)}
           {fillMinimum("skill", "skills", "skills")}
         </Section>
 
         <Section step={6} title="Fantomons · Treats" aside={weightChip(rule?.weights.fantomon)}>
-          <SlotTable names={range(4, (i) => `#${i + 1}`)} rows={form.fantomons} onChange={(rows) => set("fantomons", rows)} baseline={String(floor)} cap={caps?.fantomon ?? null} />
+          <SlotTable names={range(4, (i) => `#${i + 1}`)} rows={form.fantomons} onChange={(rows) => set("fantomons", rows)} invalid={problems.slots.fantomons} baseline={String(floor)} cap={caps?.fantomon ?? null} />
           {capNote(caps?.fantomon)}
           {fillMinimum("fantomon", "fantomons", "Fantomons")}
         </Section>
 
         <Section step={7} title="Relics · Sand" aside={weightChip(rule?.weights.relic)}>
-          <SlotTable names={range(20, (i) => `#${i + 1}`)} rows={form.relics} onChange={(rows) => set("relics", rows)} baseline={String(rule?.relicFloor ?? 0)} cap={caps?.relic ?? null} prefix="+" />
+          <SlotTable names={range(20, (i) => `#${i + 1}`)} rows={form.relics} onChange={(rows) => set("relics", rows)} invalid={problems.slots.relics} baseline={String(rule?.relicFloor ?? 0)} cap={caps?.relic ?? null} prefix="+" />
           {capNote(caps?.relic, "+")}
           {fillMinimum("relic", "relics", "relics")}
         </Section>
@@ -332,10 +336,18 @@ export function PlannerPage({ character, onCharacterChange, form, onChange, resu
       </div>
 
       <aside className="planner-summary" id="summary">
-        <Summary result={result} now={now} />
+        {silly ? <GoatCard messages={problems.messages} outlined={Object.values(problems.slots).some((x) => x.size > 0)} /> : <Summary result={result} now={now} />}
       </aside>
 
-      {result && (
+      {silly ? (
+        <a className="mobile-bar goat-bar" href="#summary" onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("summary")?.scrollIntoView({ behavior: "smooth" });
+        }}>
+          <b>🐐 You silly goat!</b>
+          <span>Some numbers can't happen. Tap to see why.</span>
+        </a>
+      ) : result && (
         <a className="mobile-bar" href="#summary" onClick={(e) => {
           e.preventDefault();
           document.getElementById("summary")?.scrollIntoView({ behavior: "smooth" });
