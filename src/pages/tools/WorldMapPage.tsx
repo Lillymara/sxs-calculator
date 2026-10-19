@@ -48,6 +48,13 @@ const lootName = (n: string) => (n === "料理锅" ? "Cooking Pot" : n === "Roll
 const lootGlyph = (n: string) =>
   /chest/i.test(n) ? "🧰" : /ore|iron|stone|sand|gem|amber/i.test(n) ? "⛏️" : /wood|vine|spore|fruit|pear|chestnut|grain/i.test(n) ? "🌿" : /treat|riceball|food|cooking/i.test(n) ? "🍱" : /badge|trinket/i.test(n) ? "✨" : "📦";
 
+interface MapFilter {
+  wheels: boolean;
+  places: boolean;
+  /** Unlock item ids whose blockades are hidden. */
+  hidden: number[];
+}
+
 type Selection = { type: "wheel"; id: number } | { type: "area"; id: string } | null;
 
 /** A map marker: an unlockable area at its blockade (where the unlock item is used). */
@@ -107,7 +114,12 @@ function WorldMap({ data }: { data: WorldData }) {
   const spots = useMemo(() => pairBlockades(map, areas), [map, areas]);
   const wheels = Object.values(map.wheels || {});
   const [selection, setSelection] = useState<Selection>(wheels[0] ? { type: "wheel", id: wheels[0].id } : null);
-  const [unlocks, setUnlocks] = useState<Set<number>>(() => new Set(Object.keys(map.unlocks).map(Number)));
+  // What to draw. Kept per visitor and across regions: blockade types are hidden by unlock item id.
+  const [filter, setFilter] = usePersistentState<MapFilter>("sxs.mapFilter", { wheels: true, places: true, hidden: [] });
+  const unlocks = useMemo(
+    () => new Set(Object.keys(map.unlocks).map(Number).filter((id) => !filter.hidden.includes(id))),
+    [map, filter.hidden],
+  );
   const [hover, setHover] = useState<{ area: Area; x: number; y: number } | null>(null);
   const [toast, setToast] = useState("");
 
@@ -154,7 +166,7 @@ function WorldMap({ data }: { data: WorldData }) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.lineJoin = "round";
-    for (const label of [...map.labels].sort((a, b) => Number(a.major) - Number(b.major))) {
+    for (const label of filter.places ? [...map.labels].sort((a, b) => Number(a.major) - Number(b.major)) : []) {
       if (!label.major && zoom < 0.84) continue;
       const p = { x: v.ox + label.x * v.scale, y: v.oy - label.y * v.scale };
       const size = label.major ? Math.max(10, Math.min(14, v.scale * 2.2)) : Math.max(8, Math.min(11, v.scale * 1.62));
@@ -196,7 +208,7 @@ function WorldMap({ data }: { data: WorldData }) {
       ctx.restore();
     }
     // Lucky wheels
-    for (const wheel of Object.values(map.wheels || {})) {
+    for (const wheel of filter.wheels ? Object.values(map.wheels || {}) : []) {
       const p = { x: v.ox + wheel.world[0] * v.scale, y: v.oy - wheel.world[1] * v.scale };
       const active = selection?.type === "wheel" && selection.id === wheel.id;
       const size = Math.max(42, Math.min(60, v.scale * 9.5));
@@ -233,7 +245,7 @@ function WorldMap({ data }: { data: WorldData }) {
       ctx.fillText(label, p.x, ly + 12);
       ctx.restore();
     }
-  }, [map, spots, unlocks, selection, data.items, imagesReady]);
+  }, [map, spots, unlocks, filter.wheels, filter.places, selection, data.items, imagesReady]);
 
   const fit = useCallback(() => {
     const canvas = canvasRef.current;
@@ -279,7 +291,6 @@ function WorldMap({ data }: { data: WorldData }) {
     const m = data.maps[id];
     const ws = Object.values(m.wheels || {});
     setSelection(ws[0] ? { type: "wheel", id: ws[0].id } : null);
-    setUnlocks(new Set(Object.keys(m.unlocks).map(Number)));
     setHover(null);
   };
 
@@ -379,7 +390,7 @@ function WorldMap({ data }: { data: WorldData }) {
               const p = point(e);
               let best = Infinity;
               let hit: Selection = null;
-              for (const w of Object.values(map.wheels || {})) {
+              for (const w of filter.wheels ? Object.values(map.wheels || {}) : []) {
                 const m = toScreen(w.world[0], w.world[1]);
                 const d = Math.hypot(p.x - m.x, p.y - m.y);
                 if (d < 58 && d < best) { hit = { type: "wheel", id: w.id }; best = d; }
@@ -406,35 +417,45 @@ function WorldMap({ data }: { data: WorldData }) {
           {toast && <div className="map-toast" role="status">{toast}</div>}
         </div>
 
-        <div className="unlock-bar">
-          <span className="event-tag">Unlock items</span>
-          {Object.entries(map.unlocks).length ? (
-            <>
-              {Object.entries(map.unlocks).map(([id, u]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={unlocks.has(+id)}
-                  onClick={() => setUnlocks((prev) => {
-                    const n = new Set(prev);
-                    if (n.has(+id)) n.delete(+id);
-                    else n.add(+id);
-                    return n;
-                  })}
-                >
-                  <span className="unlock-name">
-                    {data.items[id]?.icon && <img src={iconUrl(data.items[id].icon)} alt="" />}
-                    {data.items[id]?.name} ×{u.points.length}
-                  </span>
-                  <small>{u.use}</small>
-                </button>
-              ))}
-              <button type="button" className="link-button" onClick={() => setUnlocks(new Set(Object.keys(map.unlocks).map(Number)))}>Show all</button>
-              <button type="button" className="link-button" onClick={() => setUnlocks(new Set())}>Clear</button>
-            </>
-          ) : (
-            <span className="hint">No unlock items mapped in this region.</span>
-          )}
+        <div className="unlock-bar" role="group" aria-label="Show on map">
+          <span className="event-tag">Show on map</span>
+          <button type="button" aria-pressed={filter.wheels} onClick={() => setFilter((f) => ({ ...f, wheels: !f.wheels }))}>
+            <span className="unlock-name">
+              {data.markerIcon && <img src={iconUrl(data.markerIcon)} alt="" />}
+              Lucky Wheels ×{wheels.length}
+            </span>
+            <small>Spin for rewards</small>
+          </button>
+          {Object.entries(map.unlocks).map(([id, u]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={unlocks.has(+id)}
+              onClick={() =>
+                setFilter((f) => ({ ...f, hidden: f.hidden.includes(+id) ? f.hidden.filter((x) => x !== +id) : [...f.hidden, +id] }))
+              }
+            >
+              <span className="unlock-name">
+                {data.items[id]?.icon && <img src={iconUrl(data.items[id].icon)} alt="" />}
+                {data.items[id]?.name} ×{u.points.length}
+              </span>
+              <small>{u.use}</small>
+            </button>
+          ))}
+          <button type="button" aria-pressed={filter.places} onClick={() => setFilter((f) => ({ ...f, places: !f.places }))}>
+            <span className="unlock-name">Place names ×{map.labels.length}</span>
+            <small>Towns, camps and areas</small>
+          </button>
+          <button type="button" className="link-button" onClick={() => setFilter({ wheels: true, places: true, hidden: [] })}>Show all</button>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() =>
+              setFilter({ wheels: false, places: false, hidden: [...new Set(Object.values(data.maps).flatMap((m) => Object.keys(m.unlocks).map(Number)))] })
+            }
+          >
+            Clear all
+          </button>
         </div>
       </section>
 
