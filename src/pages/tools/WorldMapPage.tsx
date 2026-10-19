@@ -1,5 +1,5 @@
 // Interactive world map drawn from client map data.
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePersistentState } from "../../lib/storage";
 
 type Rect = [number, number, number, number, string, number?];
@@ -50,6 +50,41 @@ const lootGlyph = (n: string) =>
 
 type Selection = { type: "wheel"; id: number } | { type: "area"; id: string } | null;
 
+/** A map marker: an unlockable area at its blockade (where the unlock item is used). */
+interface Spot {
+  /** The area behind the blockade; null for a blockade with no recorded area. */
+  area: Area | null;
+  itemId: number;
+  /** Index into the item's unlock points, or -1 for an area whose blockade isn't mapped. */
+  index: number;
+  at: [number, number];
+}
+
+/** Pairs each area with the nearest blockade of its own unlock item, closest pairs first. */
+function pairBlockades(map: MapData, areas: Area[]): Spot[] {
+  const pairs: { area: Area; itemId: number; index: number; d: number }[] = [];
+  for (const area of areas) {
+    map.unlocks[area.unlockItem]?.points.forEach((pt, index) =>
+      pairs.push({ area, itemId: area.unlockItem, index, d: Math.hypot(pt[0] - area.world[0], pt[1] - area.world[1]) }),
+    );
+  }
+  pairs.sort((a, b) => a.d - b.d);
+  const usedArea = new Set<string>(), usedPoint = new Set<string>();
+  const spots: Spot[] = [];
+  for (const p of pairs) {
+    const key = `${p.itemId}:${p.index}`;
+    if (usedArea.has(p.area.id) || usedPoint.has(key)) continue;
+    usedArea.add(p.area.id);
+    usedPoint.add(key);
+    spots.push({ area: p.area, itemId: p.itemId, index: p.index, at: map.unlocks[p.itemId].points[p.index] });
+  }
+  for (const area of areas) if (!usedArea.has(area.id)) spots.push({ area, itemId: area.unlockItem, index: -1, at: area.world });
+  for (const [id, u] of Object.entries(map.unlocks)) {
+    u.points.forEach((at, index) => !usedPoint.has(`${id}:${index}`) && spots.push({ area: null, itemId: +id, index, at }));
+  }
+  return spots;
+}
+
 export function WorldMapPage() {
   const [data, setData] = useState<WorldData | null>(null);
   const [error, setError] = useState("");
@@ -68,7 +103,8 @@ export function WorldMapPage() {
 function WorldMap({ data }: { data: WorldData }) {
   const [mapId, setMapId] = useState("11");
   const map = data.maps[mapId];
-  const areas = data.areaLoot[mapId] || [];
+  const areas = useMemo(() => data.areaLoot[mapId] || [], [data, mapId]);
+  const spots = useMemo(() => pairBlockades(map, areas), [map, areas]);
   const wheels = Object.values(map.wheels || {});
   const [selection, setSelection] = useState<Selection>(wheels[0] ? { type: "wheel", id: wheels[0].id } : null);
   const [unlocks, setUnlocks] = useState<Set<number>>(() => new Set(Object.keys(map.unlocks).map(Number)));
@@ -130,51 +166,34 @@ function WorldMap({ data }: { data: WorldData }) {
       ctx.fillText(label.name, p.x, p.y);
     }
     ctx.restore();
-    // Unlockable areas
-    for (const area of areas) {
-      const p = { x: v.ox + area.world[0] * v.scale, y: v.oy - area.world[1] * v.scale };
-      const active = selection?.type === "area" && selection.id === area.id;
-      const size = Math.max(20, Math.min(28, v.scale * 4.8));
+    // Unlockable areas, each drawn at its blockade with the unlock item's icon
+    for (const spot of spots) {
+      if (spot.index >= 0 && !unlocks.has(spot.itemId)) continue;
+      const p = { x: v.ox + spot.at[0] * v.scale, y: v.oy - spot.at[1] * v.scale };
+      const active = !!spot.area && selection?.type === "area" && selection.id === spot.area.id;
+      const item = data.items[spot.itemId];
+      const size = Math.max(23, Math.min(34, v.scale * 5.7));
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(p.x - size * 0.52, p.y - size * 0.42, size * 1.04, size * 0.84, 6);
-      ctx.fillStyle = active ? "#342e0c" : "rgba(5,25,33,.96)";
+      ctx.arc(p.x, p.y, size * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = active ? "#342e0c" : "rgba(7,17,28,.93)";
+      if (active) {
+        ctx.shadowColor = "rgba(255,216,76,.9)";
+        ctx.shadowBlur = 14;
+      }
       ctx.fill();
-      ctx.strokeStyle = active ? "#ffd84c" : "#5de7f4";
-      ctx.lineWidth = active ? 2.8 : 2;
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = active ? "#ffd84c" : "#ff6079";
+      ctx.lineWidth = active ? 3 : 2.4;
       ctx.stroke();
-      ctx.fillStyle = active ? "#ffe67a" : "#b7f8fc";
-      ctx.font = `900 ${Math.max(9, size * 0.42)}px system-ui`;
+      ctx.fillStyle = "#fff";
+      ctx.font = "900 11px system-ui";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("◆", p.x, p.y + size * 0.04);
+      const icon = imageFor(item?.icon);
+      if (icon) ctx.drawImage(icon, p.x - size * 0.34, p.y - size * 0.34, size * 0.68, size * 0.68);
+      else ctx.fillText(item?.fallback || item?.name?.slice(0, 1) || "?", p.x, p.y);
       ctx.restore();
-    }
-    // Unlock item locations
-    for (const itemId of unlocks) {
-      const u = map.unlocks[itemId];
-      if (!u) continue;
-      const item = data.items[itemId];
-      for (const [x, y] of u.points) {
-        const p = { x: v.ox + x * v.scale, y: v.oy - y * v.scale };
-        const size = Math.max(23, Math.min(34, v.scale * 5.7));
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, size * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(7,17,28,.93)";
-        ctx.fill();
-        ctx.strokeStyle = "#ff6079";
-        ctx.lineWidth = 2.4;
-        ctx.stroke();
-        ctx.fillStyle = "#fff";
-        ctx.font = "900 11px system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const icon = imageFor(item?.icon);
-        if (icon) ctx.drawImage(icon, p.x - size * 0.34, p.y - size * 0.34, size * 0.68, size * 0.68);
-        else ctx.fillText(item?.fallback || item?.name?.slice(0, 1) || "?", p.x, p.y);
-        ctx.restore();
-      }
     }
     // Lucky wheels
     for (const wheel of Object.values(map.wheels || {})) {
@@ -214,7 +233,7 @@ function WorldMap({ data }: { data: WorldData }) {
       ctx.fillText(label, p.x, ly + 12);
       ctx.restore();
     }
-  }, [map, areas, unlocks, selection, data.items, imagesReady]);
+  }, [map, spots, unlocks, selection, data.items, imagesReady]);
 
   const fit = useCallback(() => {
     const canvas = canvasRef.current;
@@ -277,14 +296,16 @@ function WorldMap({ data }: { data: WorldData }) {
     const r = canvasRef.current!.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
-  const areaAt = (p: { x: number; y: number }, max = 30) => {
-    let hit: Area | null = null, best = max;
-    for (const a of areas) {
-      const m = toScreen(a.world[0], a.world[1]);
+  /** The visible marker nearest the pointer, within `max` pixels. */
+  const spotAt = (p: { x: number; y: number }, max = 28) => {
+    let hit: Spot | null = null, best = max;
+    for (const spot of spots) {
+      if (spot.index >= 0 && !unlocks.has(spot.itemId)) continue;
+      const m = toScreen(spot.at[0], spot.at[1]);
       const d = Math.hypot(p.x - m.x, p.y - m.y);
-      if (d < best) { hit = a; best = d; }
+      if (d < best) { hit = spot; best = d; }
     }
-    return hit;
+    return hit && { spot: hit, d: best };
   };
   const center = (wx: number, wy: number) => {
     const canvas = canvasRef.current!;
@@ -347,7 +368,7 @@ function WorldMap({ data }: { data: WorldData }) {
                 draw();
                 return;
               }
-              const a = areaAt(p);
+              const a = spotAt(p)?.spot.area;
               setHover(a ? { area: a, x: p.x, y: p.y } : null);
             }}
             onPointerLeave={() => !pointer.current && setHover(null)}
@@ -363,19 +384,16 @@ function WorldMap({ data }: { data: WorldData }) {
                 const d = Math.hypot(p.x - m.x, p.y - m.y);
                 if (d < 58 && d < best) { hit = { type: "wheel", id: w.id }; best = d; }
               }
-              for (const itemId of unlocks) {
-                map.unlocks[itemId]?.points.forEach((pt, i) => {
-                  const m = toScreen(pt[0], pt[1]);
-                  const d = Math.hypot(p.x - m.x, p.y - m.y);
-                  if (d < 28 && d < best) {
-                    best = d;
-                    hit = null;
-                    setToast(`${data.items[itemId]?.name} ${i + 1} of ${map.unlocks[itemId].points.length} · ${map.unlocks[itemId].use}`);
-                  }
-                });
+              const near = spotAt(p);
+              if (near && (!hit || near.d < 20)) {
+                const { spot } = near;
+                if (spot.area) hit = { type: "area", id: spot.area.id };
+                else {
+                  hit = null;
+                  const u = map.unlocks[spot.itemId];
+                  setToast(`${data.items[spot.itemId]?.name} ${spot.index + 1} of ${u.points.length} · ${u.use}`);
+                }
               }
-              const a = areaAt(p);
-              if (a && (!hit || best > 20)) hit = { type: "area", id: a.id };
               if (hit) setSelection(hit);
             }}
           />
@@ -455,8 +473,12 @@ function WorldMap({ data }: { data: WorldData }) {
           <>
             <p className="eyebrow">Unlockable area</p>
             <h2>{area.name}</h2>
-            <p className="hint">
-              {map.title} · Area {area.areaId} · {data.items[area.unlockItem]?.name}: {area.unlockUse.toLowerCase()}.
+            <p className="unlock-with">
+              {data.items[area.unlockItem]?.icon && <img src={iconUrl(data.items[area.unlockItem].icon)} alt="" />}
+              <span>
+                <span>Unlock with a <b>{data.items[area.unlockItem]?.name}</b></span>
+                <small>{area.unlockUse} · {map.title}, area {area.areaId}</small>
+              </span>
             </p>
             <ul className="ready-list">
               {area.items.map(([name, count]) => (
@@ -469,7 +491,7 @@ function WorldMap({ data }: { data: WorldData }) {
             <p className="hint">Static spawn spots recorded in the client. Respawns and chest contents are handled separately by the game.</p>
           </>
         ) : (
-          <p className="hint">{wheels.length ? "Pick a wheel or area." : "No Lucky Wheels in this region. Tap a ◆ marker to see an area's loot."}</p>
+          <p className="hint">{wheels.length ? "Pick a wheel or area." : "No Lucky Wheels in this region. Tap a blockade marker to see the area behind it."}</p>
         )}
       </section>
     </div>
