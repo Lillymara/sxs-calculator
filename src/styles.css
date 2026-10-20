@@ -274,6 +274,19 @@ input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0
 .unlock-with small { color: var(--muted); font-size: 0.8rem; }
 
 /* ---- Spending guide ---- */
+.honest-answer {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), var(--surface) 65%);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.honest-answer::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(var(--accent), var(--accent-2)); }
+.honest-answer .salt { font-size: 2.6rem; line-height: 1; padding: 10px; border-radius: 18px; background: var(--surface-2); border: 1px solid var(--line); }
+.honest-answer h2 { margin: 2px 0 10px; font-size: 1.35rem; letter-spacing: -0.015em; }
+.honest-answer p { margin: 0 0 10px; line-height: 1.6; max-width: 70ch; }
+.honest-answer strong { color: var(--accent); font-size: 1.05em; }
+.honest-answer .honest-next { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); color: var(--muted); font-weight: 600; }
+.spending-fine-print { margin: -4px 4px 0; }
+@media (max-width: 560px) { .honest-answer { grid-template-columns: 1fr; } .honest-answer .salt { justify-self: start; font-size: 2rem; } }
 .tier-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
 .tier-badge { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; }
 .tier-badge.tier-best { background: color-mix(in srgb, #22c55e 18%, transparent); color: #22c55e; }

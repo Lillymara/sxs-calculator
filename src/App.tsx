@@ -49,7 +49,7 @@ const PAGES: { id: Page; group: Group; label: string; title: string; lede: strin
   { id: "fantomons", group: "Info", label: "Fantomons", title: "Fantomons", lede: "Every Fantomon's stats, baby and adult forms, and abilities at any grade and level.", wide: true },
   { id: "companions", group: "Info", label: "Companions", title: "Companions", lede: "Companion stat bonuses by friendship level, favorite gifts, unlocks and the classes they suit.", wide: true },
   { id: "map", group: "Info", label: "World Map", title: "World Map", lede: "Lucky Wheels, unlockable areas and their loot, region by region.", wide: true },
-  { id: "spending", group: "Info", label: "Spending Guide", title: "Spending Guide", lede: "Which shop deals are worth your money, and which to skip.", wide: true },
+  { id: "spending", group: "Info", label: "Spending Guide", title: "Spending Guide", lede: "If you do spend: which deals give you the most, and which to skip.", wide: true },
 ];
 
 const pageFromHash = (): Page => {
