@@ -1,7 +1,7 @@
 // Spots planner inputs that can't happen in the game, so the planner can say why
 // instead of quietly working out nonsense.
 import type { SeasonRule } from "../../data/seasons";
-import { expToNext, parseAmount, type SeasonTable } from "../../lib/xp";
+import { parseAmount, type SeasonTable } from "../../lib/xp";
 import type { Character } from "../../components/CharacterForm";
 import { GEAR_NAMES, type PlannerForm, type SlotForm } from "./form";
 
@@ -43,12 +43,10 @@ export function findProblems(
   } else if (level !== null && table && (level < table.minLevel || level > table.maxLevel)) {
     messages.push(`Level ${level} doesn't exist in Season ${season}. Its levels run from ${table.minLevel} to ${table.maxLevel}.`);
   } else if (level !== null && table) {
-    const need = expToNext(table, level);
     if (character.progressMode === "xp" && character.currentXp.trim() !== "") {
       const xp = parseAmount(character.currentXp);
+      // More EXP than the level needs is fine: it's banked behind a level cap.
       if (!Number.isFinite(xp)) messages.push(`Your EXP into the level, "${character.currentXp}", isn't a number.`);
-      else if (need !== undefined && xp >= need)
-        messages.push(`Level ${level} only needs ${need.toLocaleString()} EXP to level up, but you entered ${xp.toLocaleString()}. You'd already be level ${level + 1}.`);
     }
     if (character.progressMode === "percent" && character.percent.trim() !== "") {
       const pct = parseAmount(character.percent.replace(/%$/, ""));

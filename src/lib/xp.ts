@@ -50,7 +50,21 @@ export interface LevelStep {
   cumulativeHours: number;
 }
 
+/** XP saved up past a level cap, which all applies once the next area opens. */
+export interface Banked {
+  /** The level you're held at now. */
+  cappedLevel: number;
+  /** All the XP you've banked. */
+  xp: number;
+  /** The level you'll jump to when the cap lifts. */
+  level: number;
+  /** True if the banked XP runs past the end of the season's data. */
+  pastData: boolean;
+}
+
 export interface CalcResult {
+  /** Set when you have more XP than your level needs (you're at a level cap). */
+  banked?: Banked;
   nextLevel: number;
   xpRequired: number;
   xpRemaining: number;
@@ -79,11 +93,30 @@ export function calculate(input: CalcInput): CalcOutcome {
   if (!Number.isFinite(currentXp) || currentXp < 0) {
     return { ok: false, error: "Enter your current XP as shown in game, like 4.13k or 1.52B." };
   }
-  if (currentXp > required) {
-    return { ok: false, error: `Level ${level} only needs ${required.toLocaleString()} XP.` };
-  }
   if (!Number.isFinite(xpPerHour) || xpPerHour <= 0) {
     return { ok: false, error: "Enter your XP per hour, like 150M." };
+  }
+
+  // More XP than the level needs means you're held at a level cap. Work out where that
+  // XP lands you once the cap lifts, then time everything from there.
+  if (currentXp >= required) {
+    let lvl = level;
+    let xp = currentXp;
+    let need: number | undefined = required;
+    while (need !== undefined && xp >= need) {
+      xp -= need;
+      lvl++;
+      need = expToNext(table, lvl);
+    }
+    const banked: Banked = { cappedLevel: level, xp: currentXp, level: lvl, pastData: need === undefined };
+    if (need === undefined) {
+      return {
+        ok: true,
+        result: { banked, nextLevel: lvl, xpRequired: 0, xpRemaining: 0, progress: 1, hoursToNext: 0 },
+      };
+    }
+    const after = calculate({ ...input, level: lvl, currentXp: xp, goalLevel: goalLevel !== undefined && goalLevel > lvl + 1 ? goalLevel : undefined });
+    return after.ok ? { ok: true, result: { ...after.result, banked } } : after;
   }
 
   const xpRemaining = required - currentXp;

@@ -32,12 +32,47 @@ export function Results({ character, outcome, now }: Props) {
 
   const r = outcome.result;
   const pct = Math.min(100, r.progress * 100);
+  const b = r.banked;
+
+  if (b?.pastData) {
+    return (
+      <section className="card results" aria-live="polite">
+        <div className="banked">
+          <p className="eyebrow">Level cap · banked XP</p>
+          <p>
+            You're held at level {b.cappedLevel} with <b>{formatXpShort(b.xp)}</b> XP saved up. When the cap lifts you'll jump to at least
+            {" "}<b>level {b.level}</b>, the end of this season's EXP data.
+          </p>
+          <p className="banked-warn">Banked XP carries over until the cap lifts, except at a season reset, where it's lost.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="card results" aria-live="polite">
-      <p className="eyebrow">{character.name ? `${character.name} → ` : ""}Level {r.nextLevel}</p>
+      {b && (
+        <div className="banked">
+          <p className="eyebrow">🔓 Level cap · banked XP</p>
+          <p className="banked-jump">
+            Level {b.cappedLevel} <span aria-hidden>→</span> <b>{b.level}</b>
+          </p>
+          <p>
+            You're held at level {b.cappedLevel} with <b>{formatXpShort(b.xp)}</b> XP saved up. When the next area opens, you'll jump straight
+            to <b>level {b.level}</b>, {pct.toFixed(1)}% of the way to {r.nextLevel}.
+          </p>
+          <p className="banked-warn">Banked XP carries over until the cap lifts, except at a season reset, where it's lost.</p>
+        </div>
+      )}
+      <p className="eyebrow">
+        {character.name ? `${character.name} → ` : ""}Level {r.nextLevel}
+        {b ? " after the jump" : ""}
+      </p>
       <p className="big-time">{formatDuration(r.hoursToNext)}</p>
-      <p className="eta">Around {formatEta(r.hoursToNext, now)}</p>
+      <p className="eta">
+        {b ? `Banked enough for level ${r.nextLevel} around ` : "Around "}
+        {formatEta(r.hoursToNext, now)}
+      </p>
 
       <div className="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
         <div className="bar-fill" style={{ width: `${pct}%` }} />

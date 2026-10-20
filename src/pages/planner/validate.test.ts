@@ -38,7 +38,8 @@ describe("silly goat checks", () => {
 
   it("catches impossible character progress", () => {
     expect(check({}, { level: "9999" }).messages[0]).toContain("doesn't exist in Season 2");
-    expect(check({}, { currentXp: "999B" }).messages[0]).toContain("You'd already be level 141");
+    expect(check({}, { currentXp: "999B" }).messages).toEqual([]); // banked behind a level cap
+    expect(check({}, { currentXp: "lots" }).messages[0]).toContain("isn't a number");
     expect(check({}, { progressMode: "percent", percent: "120" }).messages[0]).toContain("under 100%");
   });
 

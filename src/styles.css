@@ -273,6 +273,15 @@ input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0
 .unlock-with > span { display: grid; gap: 2px; }
 .unlock-with small { color: var(--muted); font-size: 0.8rem; }
 
+/* ---- Level cap: banked XP ---- */
+.banked { margin: -4px -4px 18px; padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.banked .eyebrow { margin: 0 0 4px; }
+.banked p { margin: 0; line-height: 1.5; }
+.banked-warn { margin-top: 8px !important; font-size: 0.82rem; color: var(--muted); }
+.banked-warn::before { content: "⚠️ "; }
+.banked-jump { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin: 2px 0 6px !important; color: var(--muted); }
+.banked-jump b { color: var(--text); background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
 /* ---- Spending guide ---- */
 .honest-answer {
   display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; position: relative; overflow: hidden;

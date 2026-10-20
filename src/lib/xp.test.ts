@@ -26,9 +26,24 @@ describe("calculate", () => {
     expect(calculate({ table, level: 10, currentXp: 0, xpPerHour: 1, goalLevel: 14 }).ok).toBe(false);
   });
 
-  it("rejects XP above the level requirement and non-positive rates", () => {
-    expect(calculate({ table, level: 10, currentXp: 101, xpPerHour: 1 }).ok).toBe(false);
+  it("rejects non-positive rates", () => {
     expect(calculate({ table, level: 10, currentXp: 0, xpPerHour: 0 }).ok).toBe(false);
+  });
+
+  it("works out where banked XP lands you when a level cap lifts", () => {
+    // Held at 10 with 350 XP: 100 takes you to 11, 200 more to 12, with 50 left toward 13.
+    const out = calculate({ table, level: 10, currentXp: 350, xpPerHour: 50 });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.result.banked).toEqual({ cappedLevel: 10, xp: 350, level: 12, pastData: false });
+    expect(out.result.nextLevel).toBe(13);
+    expect(out.result.xpRemaining).toBe(350);
+    expect(out.result.hoursToNext).toBe(7);
+  });
+
+  it("stops at the end of the season's data", () => {
+    const out = calculate({ table, level: 10, currentXp: 5000, xpPerHour: 50 });
+    expect(out.ok && out.result.banked).toEqual({ cappedLevel: 10, xp: 5000, level: 13, pastData: true });
   });
 });
 
