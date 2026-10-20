@@ -16,12 +16,10 @@ const CalendarPage = lazy(() => import("./pages/calendar/CalendarPage").then((m)
 const ConversionPage = lazy(() => import("./pages/tools/ConversionPage").then((m) => ({ default: m.ConversionPage })));
 const FantomonsPage = lazy(() => import("./pages/tools/FantomonsPage").then((m) => ({ default: m.FantomonsPage })));
 const CompanionsPage = lazy(() => import("./pages/tools/CompanionsPage").then((m) => ({ default: m.CompanionsPage })));
-const ChecklistPage = lazy(() => import("./pages/tools/ChecklistPage").then((m) => ({ default: m.ChecklistPage })));
 const WorldMapPage = lazy(() => import("./pages/tools/WorldMapPage").then((m) => ({ default: m.WorldMapPage })));
 
 /** Self-contained reference tools, each loaded only when opened. */
 const SIMPLE_PAGES = {
-  daily: ChecklistPage,
   conversion: ConversionPage,
   fantomons: FantomonsPage,
   companions: CompanionsPage,
@@ -43,7 +41,6 @@ type Page = "timer" | "planner" | "calendar" | keyof typeof SIMPLE_PAGES;
 type Group = "Plan" | "Info";
 const PAGES: { id: Page; group: Group; label: string; title: string; lede: string; wide?: boolean }[] = [
   { id: "timer", group: "Plan", label: "Level Timer", title: "Level Timer", lede: "Enter your character and XP rate to see when you'll reach your next level." },
-  { id: "daily", group: "Plan", label: "Daily Checklist", title: "Daily Checklist", lede: "Tick off your dailies and weeklies. Everything clears itself at the reset." },
   { id: "planner", group: "Plan", label: "Season Planner", title: "Season Planner", lede: "Plan your season's Primostars, upgrades and materials, from now until the season ends.", wide: true },
   { id: "calendar", group: "Plan", label: "Server Calendar", title: "Server Calendar", lede: "Your server's day, season dates, dungeon releases, weekly events and their rewards." },
   { id: "conversion", group: "Plan", label: "Class Change", title: "Skills Conversion", lede: "See what each of your skills can turn into when you change class.", wide: true },
