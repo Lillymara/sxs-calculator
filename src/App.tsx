@@ -16,6 +16,7 @@ const CalendarPage = lazy(() => import("./pages/calendar/CalendarPage").then((m)
 const ConversionPage = lazy(() => import("./pages/tools/ConversionPage").then((m) => ({ default: m.ConversionPage })));
 const FantomonsPage = lazy(() => import("./pages/tools/FantomonsPage").then((m) => ({ default: m.FantomonsPage })));
 const CompanionsPage = lazy(() => import("./pages/tools/CompanionsPage").then((m) => ({ default: m.CompanionsPage })));
+const SpendingPage = lazy(() => import("./pages/tools/SpendingPage").then((m) => ({ default: m.SpendingPage })));
 const WorldMapPage = lazy(() => import("./pages/tools/WorldMapPage").then((m) => ({ default: m.WorldMapPage })));
 
 /** Self-contained reference tools, each loaded only when opened. */
@@ -24,6 +25,7 @@ const SIMPLE_PAGES = {
   fantomons: FantomonsPage,
   companions: CompanionsPage,
   map: WorldMapPage,
+  spending: SpendingPage,
 };
 
 const DEFAULT_CHARACTER: Character = {
@@ -47,6 +49,7 @@ const PAGES: { id: Page; group: Group; label: string; title: string; lede: strin
   { id: "fantomons", group: "Info", label: "Fantomons", title: "Fantomons", lede: "Every Fantomon's stats, baby and adult forms, and abilities at any grade and level.", wide: true },
   { id: "companions", group: "Info", label: "Companions", title: "Companions", lede: "Companion stat bonuses by friendship level, favorite gifts, unlocks and the classes they suit.", wide: true },
   { id: "map", group: "Info", label: "World Map", title: "World Map", lede: "Lucky Wheels, unlockable areas and their loot, region by region.", wide: true },
+  { id: "spending", group: "Info", label: "Spending Guide", title: "Spending Guide", lede: "Which shop deals are worth your money, and which to skip.", wide: true },
 ];
 
 const pageFromHash = (): Page => {

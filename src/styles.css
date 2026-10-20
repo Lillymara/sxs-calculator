@@ -273,6 +273,26 @@ input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0
 .unlock-with > span { display: grid; gap: 2px; }
 .unlock-with small { color: var(--muted); font-size: 0.8rem; }
 
+/* ---- Spending guide ---- */
+.tier-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.tier-badge { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; }
+.tier-badge.tier-best { background: color-mix(in srgb, #22c55e 18%, transparent); color: #22c55e; }
+.tier-badge.tier-good { background: color-mix(in srgb, #3b82f6 18%, transparent); color: #60a5fa; }
+.tier-badge.tier-situational { background: color-mix(in srgb, #f59e0b 18%, transparent); color: #f59e0b; }
+.tier-badge.tier-skip { background: color-mix(in srgb, #ef4444 16%, transparent); color: #f87171; }
+.tier-card.tier-best { border-top: 3px solid #22c55e; }
+.tier-card.tier-good { border-top: 3px solid #3b82f6; }
+.tier-card.tier-situational { border-top: 3px solid #f59e0b; }
+.tier-card.tier-skip { border-top: 3px solid #ef4444; }
+.deal-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.deal { padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); }
+.deal h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.deal-verdict { margin: 0 0 8px; font-weight: 600; }
+.deal ul { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); font-size: 0.88rem; }
+.deal .hint { margin: 0; }
+.spending-extras { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+.buy-check { margin: 0; padding-left: 20px; display: grid; gap: 8px; line-height: 1.45; }
+
 /* ---- Silly goat (impossible planner inputs) ---- */
 .goat-card { text-align: center; }
 .goat-card .silly-goat { width: min(200px, 60%); height: auto; display: block; margin: 0 auto 8px; animation: goat-wobble 2.4s ease-in-out infinite; transform-origin: 50% 85%; }
