@@ -50,6 +50,16 @@ export const DEALS: Deal[] = [
     bestFor: "New characters.",
   },
   {
+    name: "Unlock item packs",
+    tier: "best",
+    verdict: "Blockade-clearing items are a steal, especially the 99¢ packs.",
+    why: [
+      "Gateway Keys, Withering Potions, Magic Drills, Water Mines and the like open up new areas, each with its own chests, ore, Rola and other pickups.",
+      "Every unlocked area keeps paying back, so a few cents goes a long way.",
+    ],
+    bestFor: "Anyone with blockades still in their way. The World Map shows where each one is.",
+  },
+  {
     name: "Weekly Card",
     tier: "good",
     verdict: "A smaller version of the Monthly Card. Good after the Monthly Card and Fund.",
