@@ -28,6 +28,7 @@ export function SpendingPage() {
                     {d.why.map((w) => <li key={w}>{w}</li>)}
                   </ul>
                   {d.bestFor && <p className="hint"><b>Best for:</b> {d.bestFor}</p>}
+                  {d.link && <p className="hint deal-link"><a href={d.link.href}>{d.link.label} →</a></p>}
                 </article>
               ))}
             </div>

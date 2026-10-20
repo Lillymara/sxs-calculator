@@ -12,6 +12,8 @@ export interface Deal {
   why: string[];
   /** Who it suits, or when to buy it. */
   bestFor?: string;
+  /** A page on this site to point to, shown after "Best for". */
+  link?: { label: string; href: string };
 }
 
 export const TIERS: Record<Tier, { label: string; blurb: string }> = {
@@ -57,7 +59,8 @@ export const DEALS: Deal[] = [
       "Gateway Keys, Withering Potions, Magic Drills, Water Mines and the like open up new areas, each with its own chests, ore, Rola and other pickups.",
       "Every unlocked area keeps paying back, so a few cents goes a long way.",
     ],
-    bestFor: "Anyone with blockades still in their way. The World Map shows where each one is.",
+    bestFor: "Anyone with blockades still in their way.",
+    link: { label: "See where each blockade is on the World Map", href: "#/map" },
   },
   {
     name: "Weekly Card",
