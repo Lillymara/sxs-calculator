@@ -61,6 +61,25 @@ export const PRIORITIES: Use[] = [
   },
 ];
 
+/** Where any Dawnium left over after the best uses can go, best first. */
+export const LEFTOVER_PULLS: { title: string; note?: string }[] = [
+  { title: "Relic pulls" },
+  { title: "Skill pulls" },
+  {
+    title: "Fantomon pulls",
+    note: "Worth it if you're very close to a Mythic pet purchase (60 exchange hearts), for instance with a server or Nexus tournament coming up soon.",
+  },
+];
+
+/** The reminder shown with the pulls. Kept in the site owner's words. */
+export const PULLS_REMINDER = {
+  title: "All of this spending is very optional",
+  body: [
+    "Pulling extra just because you have Dawnium to spend is usually a poor use of it. The steady build-up of character power from the best uses above will far outpace extra pulls of anything in the long run.",
+    "I promise: getting the skill you need to finish your theoretical best build will feel just as good 3 days from now, when you get it from free pulls, as it would today spending Dawnium on them.",
+  ],
+};
+
 /** Realm refresh presets for the calculator, per Realm. */
 export const REALM_PRESETS: { label: string; plan: Record<"ore" | "rola" | "essence" | "sand", number> }[] = [
   { label: "Free to play", plan: { ore: 2, rola: 2, essence: 2, sand: 2 } },

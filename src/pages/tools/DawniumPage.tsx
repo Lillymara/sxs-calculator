@@ -1,5 +1,5 @@
 // Where to spend Dawnium. Advice lives in src/data/dawnium.ts; Realm prices come from the client data.
-import { AVOID, ROLA_TIPS, PRIORITIES, REALM_PRESETS } from "../../data/dawnium";
+import { AVOID, LEFTOVER_PULLS, PRIORITIES, PULLS_REMINDER, REALM_PRESETS, ROLA_TIPS } from "../../data/dawnium";
 import { DAWNIUM_REFRESH_COSTS, ENTRIES_PER_REFRESH } from "../../data/seasons";
 import { usePersistentState } from "../../lib/storage";
 
@@ -42,6 +42,28 @@ export function DawniumPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="card leftover">
+        <h2 className="subhead">Anything left over? Pulls, in this order</h2>
+        <ol className="pull-order">
+          {LEFTOVER_PULLS.map((p, i) => (
+            <li key={p.title}>
+              <span className="dawn-rank small" aria-hidden>{i + 1}</span>
+              <div>
+                <b>{p.title}</b>
+                {p.note && <small>{p.note}</small>}
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="pulls-reminder">
+          <span aria-hidden>💜</span>
+          <div>
+            <h3>{PULLS_REMINDER.title}</h3>
+            {PULLS_REMINDER.body.map((b) => <p key={b}>{b}</p>)}
+          </div>
+        </div>
       </section>
 
       <div className="tool-grid dawn-grid">
