@@ -32,6 +32,15 @@ export const PRIORITIES: Use[] = [
     link: { label: "See which materials you're short on in the Season Planner", href: "#/planner" },
   },
   {
+    title: "Guild donations & 24-hour tool upgrade",
+    cost: "70 for the 2nd and 3rd",
+    advice: "Everyone should consider this one. Donate 3 times a day: the first is free, the next two cost 70 Dawnium in total.",
+    points: [
+      "Also keep the 150 Dawnium 24-hour tool upgrade running at your guild's gathering spots.",
+      "Together they return a great haul of guild tokens for the guild shop. The discounted sheep, chickens and plants are the top buys.",
+    ],
+  },
+  {
     title: "Shop refreshes",
     cost: "Gold, climbing to 20k by the 4th",
     advice: "Refresh 2 or 3 times a day and buy everything with limited stock, usually the top 9 items.",
@@ -47,15 +56,6 @@ export const PRIORITIES: Use[] = [
     points: [
       "Save your attempts later in the week, buy 4 before Monday's reset and 4 more after it.",
       "That gives you roughly 20–28 runs when the ladder resets, enough to jump to a decent placing right away.",
-    ],
-  },
-  {
-    title: "Guild donations",
-    cost: "70 for the 2nd and 3rd",
-    advice: "Everyone should consider this one. Donate 3 times a day: the first is free, the next two cost 70 Dawnium in total.",
-    points: [
-      "Also keep the 150 Dawnium tool going at your guild's gathering spots.",
-      "Together they return a great haul of guild tokens for the guild shop. The discounted sheep, chickens and plants are the top buys.",
     ],
   },
 ];
