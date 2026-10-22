@@ -56,6 +56,7 @@ export const PRIORITIES: Use[] = [
     points: [
       "Save your attempts later in the week, buy 4 before Monday's reset and 4 more after it.",
       "That gives you roughly 20–28 runs when the ladder resets, enough to jump to a decent placing right away.",
+      "During the week, buy 2 attempts a day only if you can actually climb higher. If you can't, it's wasted Dawnium.",
     ],
   },
 ];
