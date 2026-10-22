@@ -17,6 +17,7 @@ const ConversionPage = lazy(() => import("./pages/tools/ConversionPage").then((m
 const FantomonsPage = lazy(() => import("./pages/tools/FantomonsPage").then((m) => ({ default: m.FantomonsPage })));
 const CompanionsPage = lazy(() => import("./pages/tools/CompanionsPage").then((m) => ({ default: m.CompanionsPage })));
 const SpendingPage = lazy(() => import("./pages/tools/SpendingPage").then((m) => ({ default: m.SpendingPage })));
+const DawniumPage = lazy(() => import("./pages/tools/DawniumPage").then((m) => ({ default: m.DawniumPage })));
 const WorldMapPage = lazy(() => import("./pages/tools/WorldMapPage").then((m) => ({ default: m.WorldMapPage })));
 
 /** Self-contained reference tools, each loaded only when opened. */
@@ -26,6 +27,7 @@ const SIMPLE_PAGES = {
   companions: CompanionsPage,
   map: WorldMapPage,
   spending: SpendingPage,
+  dawnium: DawniumPage,
 };
 
 const DEFAULT_CHARACTER: Character = {
@@ -50,6 +52,7 @@ const PAGES: { id: Page; group: Group; label: string; title: string; lede: strin
   { id: "companions", group: "Info", label: "Companions", title: "Companions", lede: "Companion stat bonuses by friendship level, favorite gifts, unlocks and the classes they suit.", wide: true },
   { id: "map", group: "Info", label: "World Map", title: "World Map", lede: "Lucky Wheels, unlockable areas and their loot, region by region.", wide: true },
   { id: "spending", group: "Info", label: "Spending Guide", title: "Spending Guide", lede: "If you do spend: which deals give you the most, and which to skip.", wide: true },
+  { id: "dawnium", group: "Info", label: "Dawnium Guide", title: "Dawnium Guide", lede: "Where your Dawnium (and gold) does the most good, and what to skip.", wide: true },
 ];
 
 const pageFromHash = (): Page => {

@@ -295,6 +295,16 @@ input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0
 .banked-jump { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin: 2px 0 6px !important; color: var(--muted); }
 .banked-jump b { color: var(--text); background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
+/* ---- Dawnium guide ---- */
+.dawn-uses { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.dawn-uses > li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); }
+.dawn-rank { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: var(--on-accent); background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.dawn-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 4px; }
+.dawn-title h3 { margin: 0; font-size: 1.05rem; }
+.dawn-uses ul { margin: 0 0 4px; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); font-size: 0.9rem; }
+.dawn-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+tr.dawn-cheap td { color: #4ade80; font-weight: 700; }
+
 /* ---- Spending guide ---- */
 .honest-answer {
   display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; position: relative; overflow: hidden;
