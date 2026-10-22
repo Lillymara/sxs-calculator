@@ -42,11 +42,11 @@ export const PRIORITIES: Use[] = [
   },
   {
     title: "Shop refreshes",
-    cost: "Gold, climbing to 20k by the 4th",
+    cost: "Rola, climbing to 20k by the 4th",
     advice: "Refresh 2 or 3 times a day and buy everything with limited stock, usually the top 9 items.",
     points: [
       "The 4th refresh's 20k price starts to feel steep until Season 2 or beyond.",
-      "Stick to your own gold budget (see the gold tips below).",
+      "Stick to your own Rola budget (see the Rola tips below).",
     ],
   },
   {
@@ -67,9 +67,9 @@ export const REALM_PRESETS: { label: string; plan: Record<"ore" | "rola" | "esse
   { label: "Whale", plan: { ore: 10, rola: 10, essence: 10, sand: 10 } },
 ];
 
-/** Gold budgeting tips. */
-export const GOLD_TIPS = [
-  "Keep a surplus of 200k–500k gold. That covers most power spikes that need gold.",
+/** Rola budgeting tips. */
+export const ROLA_TIPS = [
+  "Keep a surplus of 200k–500k Rola. That covers most power spikes that need Rola.",
   "Always check what your next rank will cost. Expert 2, for example, costs 110k at level 80.",
 ];
 

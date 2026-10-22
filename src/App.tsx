@@ -52,7 +52,7 @@ const PAGES: { id: Page; group: Group; label: string; title: string; lede: strin
   { id: "companions", group: "Info", label: "Companions", title: "Companions", lede: "Companion stat bonuses by friendship level, favorite gifts, unlocks and the classes they suit.", wide: true },
   { id: "map", group: "Info", label: "World Map", title: "World Map", lede: "Lucky Wheels, unlockable areas and their loot, region by region.", wide: true },
   { id: "spending", group: "Info", label: "Spending Guide", title: "Spending Guide", lede: "If you do spend: which deals give you the most, and which to skip.", wide: true },
-  { id: "dawnium", group: "Info", label: "Dawnium Guide", title: "Dawnium Guide", lede: "Where your Dawnium (and gold) does the most good, and what to skip.", wide: true },
+  { id: "dawnium", group: "Info", label: "Dawnium Guide", title: "Dawnium Guide", lede: "Where your Dawnium (and Rola) does the most good, and what to skip.", wide: true },
 ];
 
 const pageFromHash = (): Page => {

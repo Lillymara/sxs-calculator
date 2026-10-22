@@ -1,5 +1,5 @@
 // Where to spend Dawnium. Advice lives in src/data/dawnium.ts; Realm prices come from the client data.
-import { AVOID, GOLD_TIPS, PRIORITIES, REALM_PRESETS } from "../../data/dawnium";
+import { AVOID, ROLA_TIPS, PRIORITIES, REALM_PRESETS } from "../../data/dawnium";
 import { DAWNIUM_REFRESH_COSTS, ENTRIES_PER_REFRESH } from "../../data/seasons";
 import { usePersistentState } from "../../lib/storage";
 
@@ -114,9 +114,9 @@ export function DawniumPage() {
 
       <div className="tool-grid dawn-grid">
         <section className="card">
-          <h2 className="subhead">Gold tips</h2>
+          <h2 className="subhead">Rola tips</h2>
           <ul className="buy-check">
-            {GOLD_TIPS.map((a) => <li key={a}>{a}</li>)}
+            {ROLA_TIPS.map((a) => <li key={a}>{a}</li>)}
           </ul>
         </section>
         <section className="card">
