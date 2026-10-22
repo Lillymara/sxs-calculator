@@ -51,6 +51,8 @@ const lootGlyph = (n: string) =>
 interface MapFilter {
   wheels: boolean;
   places: boolean;
+  /** Hide blockades the player has marked as opened. */
+  hideOpened: boolean;
   /** Unlock item ids whose blockades are hidden. */
   hidden: number[];
 }
@@ -92,6 +94,9 @@ function pairBlockades(map: MapData, areas: Area[]): Spot[] {
   return spots;
 }
 
+/** Stable id for a blockade, used to remember which ones a player has opened. */
+const spotKey = (spot: Spot) => (spot.index >= 0 ? `${spot.itemId}:${spot.index}` : `area:${spot.area?.id}`);
+
 export function WorldMapPage() {
   const [data, setData] = useState<WorldData | null>(null);
   const [error, setError] = useState("");
@@ -115,11 +120,25 @@ function WorldMap({ data }: { data: WorldData }) {
   const wheels = Object.values(map.wheels || {});
   const [selection, setSelection] = useState<Selection>(wheels[0] ? { type: "wheel", id: wheels[0].id } : null);
   // What to draw. Kept per visitor and across regions: blockade types are hidden by unlock item id.
-  const [filter, setFilter] = usePersistentState<MapFilter>("sxs.mapFilter", { wheels: true, places: true, hidden: [] });
+  const [filter, setFilter] = usePersistentState<MapFilter>("sxs.mapFilter", { wheels: true, places: true, hideOpened: false, hidden: [] });
   const unlocks = useMemo(
     () => new Set(Object.keys(map.unlocks).map(Number).filter((id) => !filter.hidden.includes(id))),
     [map, filter.hidden],
   );
+  // Blockades the player has opened, per region, keyed by spotKey.
+  const [openedByMap, setOpenedByMap] = usePersistentState<Record<string, string[]>>("sxs.opened", {});
+  const opened = useMemo(() => new Set(openedByMap[mapId] ?? []), [openedByMap, mapId]);
+  const toggleOpened = (spot: Spot) =>
+    setOpenedByMap((all) => {
+      const set = new Set(all[mapId] ?? []);
+      const key = spotKey(spot);
+      if (set.has(key)) set.delete(key);
+      else set.add(key);
+      return { ...all, [mapId]: [...set] };
+    });
+  /** Whether a marker is drawn and clickable under the current filter. */
+  const shown = (spot: Spot) =>
+    (spot.index < 0 || unlocks.has(spot.itemId)) && !(filter.hideOpened && opened.has(spotKey(spot)));
   const [hover, setHover] = useState<{ area: Area; x: number; y: number } | null>(null);
   const [toast, setToast] = useState("");
 
@@ -180,9 +199,10 @@ function WorldMap({ data }: { data: WorldData }) {
     ctx.restore();
     // Unlockable areas, each drawn at its blockade with the unlock item's icon
     for (const spot of spots) {
-      if (spot.index >= 0 && !unlocks.has(spot.itemId)) continue;
+      if (!shown(spot)) continue;
       const p = { x: v.ox + spot.at[0] * v.scale, y: v.oy - spot.at[1] * v.scale };
       const active = !!spot.area && selection?.type === "area" && selection.id === spot.area.id;
+      const done = opened.has(spotKey(spot));
       const item = data.items[spot.itemId];
       const size = Math.max(23, Math.min(34, v.scale * 5.7));
       ctx.save();
@@ -195,16 +215,32 @@ function WorldMap({ data }: { data: WorldData }) {
       }
       ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = active ? "#ffd84c" : "#ff6079";
+      ctx.strokeStyle = active ? "#ffd84c" : done ? "#4ade80" : "#ff6079";
       ctx.lineWidth = active ? 3 : 2.4;
       ctx.stroke();
       ctx.fillStyle = "#fff";
       ctx.font = "900 11px system-ui";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      if (done) ctx.globalAlpha = 0.4;
       const icon = imageFor(item?.icon);
       if (icon) ctx.drawImage(icon, p.x - size * 0.34, p.y - size * 0.34, size * 0.68, size * 0.68);
       else ctx.fillText(item?.fallback || item?.name?.slice(0, 1) || "?", p.x, p.y);
+      ctx.globalAlpha = 1;
+      if (done) {
+        // A green tick badge on opened blockades
+        const r = size * 0.22, bx = p.x + size * 0.36, by = p.y - size * 0.36;
+        ctx.beginPath();
+        ctx.arc(bx, by, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#22c55e";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(7,17,28,.93)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${Math.round(r * 1.5)}px system-ui`;
+        ctx.fillText("✓", bx, by + 0.5);
+      }
       ctx.restore();
     }
     // Lucky wheels
@@ -245,7 +281,7 @@ function WorldMap({ data }: { data: WorldData }) {
       ctx.fillText(label, p.x, ly + 12);
       ctx.restore();
     }
-  }, [map, spots, unlocks, filter.wheels, filter.places, selection, data.items, imagesReady]);
+  }, [map, spots, unlocks, opened, filter.hideOpened, filter.wheels, filter.places, selection, data.items, imagesReady]);
 
   const fit = useCallback(() => {
     const canvas = canvasRef.current;
@@ -311,7 +347,7 @@ function WorldMap({ data }: { data: WorldData }) {
   const spotAt = (p: { x: number; y: number }, max = 28) => {
     let hit: Spot | null = null, best = max;
     for (const spot of spots) {
-      if (spot.index >= 0 && !unlocks.has(spot.itemId)) continue;
+      if (!shown(spot)) continue;
       const m = toScreen(spot.at[0], spot.at[1]);
       const d = Math.hypot(p.x - m.x, p.y - m.y);
       if (d < best) { hit = spot; best = d; }
@@ -383,6 +419,10 @@ function WorldMap({ data }: { data: WorldData }) {
               setHover(a ? { area: a, x: p.x, y: p.y } : null);
             }}
             onPointerLeave={() => !pointer.current && setHover(null)}
+            onDoubleClick={(e) => {
+              const near = spotAt(point(e));
+              if (near) toggleOpened(near.spot);
+            }}
             onPointerUp={(e) => {
               const ptr = pointer.current;
               pointer.current = null;
@@ -446,17 +486,70 @@ function WorldMap({ data }: { data: WorldData }) {
             <span className="unlock-name">Place names ×{map.labels.length}</span>
             <small>Towns, camps and areas</small>
           </button>
-          <button type="button" className="link-button" onClick={() => setFilter({ wheels: true, places: true, hidden: [] })}>Show all</button>
+          <button type="button" aria-pressed={filter.hideOpened} onClick={() => setFilter((f) => ({ ...f, hideOpened: !f.hideOpened }))}>
+            <span className="unlock-name">Hide opened</span>
+            <small>Only show what's left</small>
+          </button>
+          <button type="button" className="link-button" onClick={() => setFilter({ wheels: true, places: true, hideOpened: false, hidden: [] })}>Show all</button>
           <button
             type="button"
             className="link-button"
             onClick={() =>
-              setFilter({ wheels: false, places: false, hidden: [...new Set(Object.values(data.maps).flatMap((m) => Object.keys(m.unlocks).map(Number)))] })
+              setFilter({ wheels: false, places: false, hideOpened: false, hidden: [...new Set(Object.values(data.maps).flatMap((m) => Object.keys(m.unlocks).map(Number)))] })
             }
           >
             Clear all
           </button>
         </div>
+
+        {(() => {
+          // Running total: unlock items still needed for this region's blockades.
+          const totals = new Map<number, { total: number; left: number }>();
+          for (const spot of spots) {
+            const t = totals.get(spot.itemId) ?? { total: 0, left: 0 };
+            t.total++;
+            if (!opened.has(spotKey(spot))) t.left++;
+            totals.set(spot.itemId, t);
+          }
+          const all = [...totals.values()].reduce((a, t) => ({ total: a.total + t.total, left: a.left + t.left }), { total: 0, left: 0 });
+          if (!all.total) return null;
+          const done = all.total - all.left;
+          return (
+            <div className="still-needed">
+              <div className="still-needed-head">
+                <span className="event-tag">Still needed in {map.title}</span>
+                <span className="chip">{done} of {all.total} opened</span>
+              </div>
+              <div className="bar" role="progressbar" aria-label="Blockades opened" aria-valuenow={Math.round((done / all.total) * 100)} aria-valuemin={0} aria-valuemax={100}>
+                <div className="bar-fill" style={{ width: `${(done / all.total) * 100}%` }} />
+              </div>
+              {all.left === 0 ? (
+                <p className="note good">Every blockade in {map.title} is open. 🎉</p>
+              ) : (
+                <ul className="needed-items">
+                  {[...totals.entries()].filter(([, t]) => t.left > 0).map(([id, t]) => (
+                    <li key={id}>
+                      {data.items[id]?.icon && <img src={iconUrl(data.items[id].icon)} alt="" />}
+                      <b>{data.items[id]?.name} ×{t.left}</b>
+                      <small>{t.total - t.left} of {t.total} done</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="hint">
+                Tap a blockade and press "Mark as opened", or double-click it on the map. Counts one item per blockade.
+                {done > 0 && (
+                  <>
+                    {" "}
+                    <button type="button" className="link-button" onClick={() => setOpenedByMap((o) => ({ ...o, [mapId]: [] }))}>
+                      Reset {map.title}
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
+          );
+        })()}
       </section>
 
       <section className="card map-panel">
@@ -501,6 +594,16 @@ function WorldMap({ data }: { data: WorldData }) {
                 <small>{area.unlockUse} · {map.title}, area {area.areaId}</small>
               </span>
             </p>
+            {(() => {
+              const spot = spots.find((sp) => sp.area?.id === area.id);
+              if (!spot) return null;
+              const isOpen = opened.has(spotKey(spot));
+              return (
+                <button type="button" className={`open-toggle ${isOpen ? "is-open" : ""}`} aria-pressed={isOpen} onClick={() => toggleOpened(spot)}>
+                  {isOpen ? "✓ Opened · tap to undo" : "Mark as opened"}
+                </button>
+              );
+            })()}
             <ul className="ready-list">
               {area.items.map(([name, count]) => (
                 <li key={name}>
