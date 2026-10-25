@@ -10,6 +10,10 @@ export interface Character {
   percent: string;
   rate: string;
   goalLevel: string;
+  /** Count the free daily bed boost (2 hours of EXP) in the Level Timer. */
+  bedBoost?: boolean;
+  /** Temporal Crystals to use now, 2 hours of EXP each. */
+  crystals?: string;
 }
 
 interface Props {
@@ -124,6 +128,34 @@ export function CharacterForm({ character, onChange, onReset, table, compact }: 
           />
           <small>Check the bed in your house for your current rate.</small>
         </label>
+
+        {!compact && (
+          <fieldset className="field span-2 boosts">
+            <legend>Boosts <em>(optional)</em></legend>
+            <label className="check boost-row">
+              <input type="checkbox" checked={!!character.bedBoost} onChange={(e) => set("bedBoost", e.target.checked)} />
+              <span className="boost-icon" aria-hidden>🛏️</span>
+              <span>
+                Use my free daily bed boost
+                <small>2 hours of EXP once a day. Counts today's boost now, then one after each daily reset.</small>
+              </span>
+            </label>
+            <label className="boost-row crystals">
+              <img src={`${import.meta.env.BASE_URL}art/items/item_120.png`} alt="" className="boost-icon" />
+              <span>
+                Temporal Crystals to use
+                <small>Each grants 2 hours of EXP instantly.</small>
+              </span>
+              <input
+                inputMode="numeric"
+                aria-label="Temporal Crystals to use"
+                value={character.crystals ?? ""}
+                onChange={(e) => set("crystals", e.target.value)}
+                placeholder="0"
+              />
+            </label>
+          </fieldset>
+        )}
 
         {!compact && (
           <label className="field span-2">

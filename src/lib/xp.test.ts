@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculate, formatDuration, getSeason, parseAmount, seasons, type SeasonTable } from "./xp";
+import { calculate, formatDuration, getSeason, hoursToEarn, parseAmount, seasons, type SeasonTable } from "./xp";
 
 const table: SeasonTable = { season: 9, minLevel: 10, maxLevel: 12, expToNext: [100, 200, 400] };
 
@@ -44,6 +44,29 @@ describe("calculate", () => {
   it("stops at the end of the season's data", () => {
     const out = calculate({ table, level: 10, currentXp: 5000, xpPerHour: 50 });
     expect(out.ok && out.result.banked).toEqual({ cappedLevel: 10, xp: 5000, level: 13, pastData: true });
+  });
+});
+
+describe("boosts", () => {
+  it("takes instant boost hours off the top", () => {
+    // 10 hours of EXP needed, 2 bed + 4 crystal hours used now: 4 real hours left.
+    expect(hoursToEarn(1000, 100, { nowHours: 6, dailyHours: 0, hoursUntilReset: 5 })).toBe(4);
+    expect(hoursToEarn(500, 100, { nowHours: 6, dailyHours: 0, hoursUntilReset: 5 })).toBe(0);
+  });
+
+  it("adds the bed boost again after each daily reset", () => {
+    // 40h of EXP. Now: 2h boost (38 left). 5h to reset (33 left), +2 at reset (31 left),
+    // 24h to the next reset (7 left), +2 (5 left), then 5 more hours: 5 + 24 + 5 = 34.
+    expect(hoursToEarn(4000, 100, { nowHours: 2, dailyHours: 2, hoursUntilReset: 5 })).toBe(34);
+  });
+
+  it("feeds the boosted timing into level and goal results", () => {
+    const out = calculate({ table, level: 10, currentXp: 0, xpPerHour: 10, goalLevel: 12, boosts: { nowHours: 4, dailyHours: 0, hoursUntilReset: 12 } });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.result.hoursToNext).toBe(6); // 100 XP, 40 from boosts
+    expect(out.result.unboostedHoursToNext).toBe(10);
+    expect(out.result.goal?.hours).toBe(26); // 300 XP - 40 = 260
   });
 });
 

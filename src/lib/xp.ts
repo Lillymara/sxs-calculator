@@ -40,6 +40,39 @@ export interface CalcInput {
   xpPerHour: number;
   /** Optional target level beyond the next one. */
   goalLevel?: number;
+  /** Instant EXP boosts, each worth some hours at the current rate. */
+  boosts?: Boosts;
+}
+
+export interface Boosts {
+  /** Boost hours used right away (today's bed boost, Temporal Crystals). */
+  nowHours: number;
+  /** Boost hours available again after every daily reset (the bed). */
+  dailyHours: number;
+  /** Real hours until the next daily reset. */
+  hoursUntilReset: number;
+}
+
+/**
+ * Real hours to earn `xp` at `rate`, counting instant boosts: `nowHours` straight away,
+ * then `dailyHours` more at each daily reset.
+ */
+export function hoursToEarn(xp: number, rate: number, boosts?: Boosts): number {
+  if (xp <= 0) return 0;
+  if (!boosts) return xp / rate;
+  let need = xp - boosts.nowHours * rate;
+  if (need <= 0) return 0;
+  if (boosts.dailyHours <= 0) return need / rate;
+  let t = 0;
+  let reset = Math.max(0, boosts.hoursUntilReset);
+  for (;;) {
+    const before = (reset - t) * rate;
+    if (before >= need) return t + need / rate;
+    need -= before + boosts.dailyHours * rate;
+    t = reset;
+    if (need <= 0) return t;
+    reset += 24;
+  }
 }
 
 export interface LevelStep {
@@ -70,6 +103,8 @@ export interface CalcResult {
   xpRemaining: number;
   progress: number;
   hoursToNext: number;
+  /** Hours to the next level without any boosts, when boosts are in use. */
+  unboostedHoursToNext?: number;
   goal?: {
     level: number;
     xpRemaining: number;
@@ -125,7 +160,8 @@ export function calculate(input: CalcInput): CalcOutcome {
     xpRequired: required,
     xpRemaining,
     progress: required === 0 ? 1 : currentXp / required,
-    hoursToNext: xpRemaining / xpPerHour,
+    hoursToNext: hoursToEarn(xpRemaining, xpPerHour, input.boosts),
+    unboostedHoursToNext: input.boosts ? xpRemaining / xpPerHour : undefined,
   };
 
   if (goalLevel !== undefined && goalLevel > level + 1) {
@@ -137,17 +173,15 @@ export function calculate(input: CalcInput): CalcOutcome {
     }
     const steps: LevelStep[] = [];
     let total = 0;
+    let prev = 0;
     for (let l = level; l < goalLevel; l++) {
       const stepXp = l === level ? xpRemaining : expToNext(table, l)!;
       total += stepXp;
-      steps.push({
-        level: l + 1,
-        xpRemaining: stepXp,
-        hours: stepXp / xpPerHour,
-        cumulativeHours: total / xpPerHour,
-      });
+      const at = hoursToEarn(total, xpPerHour, input.boosts);
+      steps.push({ level: l + 1, xpRemaining: stepXp, hours: at - prev, cumulativeHours: at });
+      prev = at;
     }
-    result.goal = { level: goalLevel, xpRemaining: total, hours: total / xpPerHour, steps };
+    result.goal = { level: goalLevel, xpRemaining: total, hours: prev, steps };
   }
 
   return { ok: true, result };

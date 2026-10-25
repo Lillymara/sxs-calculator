@@ -5,6 +5,7 @@ import { planSeason } from "./lib/planner/plan";
 import { usePersistentState } from "./lib/storage";
 import { calculate, getSeason, parseAmount as num } from "./lib/xp";
 import { seasonStatus } from "./lib/calendar";
+import { RESET_UTC_HOUR } from "./data/calendar";
 import { DEFAULT_SERVER, effectiveDay1, localResetTime, type ServerChoice } from "./pages/calendar/server";
 import { DEFAULT_PLANNER, toPlannerInput, type PlannerForm, type TimeDefaults } from "./pages/planner/form";
 import { PlannerPage } from "./pages/planner/PlannerPage";
@@ -92,6 +93,16 @@ export default function App() {
         : NaN
       : orZero(character.currentXp);
 
+  // Boosts: the daily bed boost and Temporal Crystals are each 2 hours of EXP.
+  const crystals = Math.max(0, Math.floor(num(character.crystals ?? "") || 0));
+  const bedHours = character.bedBoost ? 2 : 0;
+  const nextReset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), RESET_UTC_HOUR));
+  if (nextReset <= now) nextReset.setUTCDate(nextReset.getUTCDate() + 1);
+  const boosts =
+    bedHours || crystals
+      ? { nowHours: bedHours + crystals * 2, dailyHours: bedHours, hoursUntilReset: (nextReset.getTime() - now.getTime()) / 3_600_000 }
+      : undefined;
+
   const goal = num(character.goalLevel);
   const ready = table && character.level !== "" && character.rate !== "";
   const outcome = ready
@@ -100,6 +111,7 @@ export default function App() {
         level,
         currentXp,
         xpPerHour: num(character.rate),
+        boosts,
         goalLevel: Number.isInteger(goal) ? goal : undefined,
       })
     : undefined;

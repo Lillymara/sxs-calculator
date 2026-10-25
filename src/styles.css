@@ -286,6 +286,17 @@ input.silly { border-color: var(--error); color: var(--error); box-shadow: 0 0 0
 .open-toggle:hover { border-color: var(--accent); }
 .open-toggle.is-open { background: color-mix(in srgb, #22c55e 18%, var(--surface)); border-color: #22c55e; color: #4ade80; }
 
+/* ---- Level Timer boosts ---- */
+.boosts { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.boosts legend { padding: 0 6px; }
+.boost-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 10px; align-items: center; font-size: 0.9rem; font-weight: 600; }
+.boost-row small { display: block; font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+.boost-row input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.boost-icon { width: 30px; height: 30px; object-fit: contain; font-size: 1.4rem; line-height: 30px; text-align: center; }
+.boost-row.crystals { grid-template-columns: auto minmax(0, 1fr) 90px; }
+.boost-row.crystals input { text-align: center; }
+.boost-saved { margin: 6px 0 0; font-weight: 700; color: var(--accent); }
+
 /* ---- Level cap: banked XP ---- */
 .banked { margin: -4px -4px 18px; padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .banked .eyebrow { margin: 0 0 4px; }

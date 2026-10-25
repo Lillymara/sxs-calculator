@@ -73,6 +73,9 @@ export function Results({ character, outcome, now }: Props) {
         {b ? `Banked enough for level ${r.nextLevel} around ` : "Around "}
         {formatEta(r.hoursToNext, now)}
       </p>
+      {r.unboostedHoursToNext !== undefined && r.unboostedHoursToNext - r.hoursToNext >= 1 / 60 && (
+        <p className="boost-saved">⚡ Boosts save you {formatDuration(Math.round((r.unboostedHoursToNext - r.hoursToNext) * 60) / 60)}</p>
+      )}
 
       <div className="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
         <div className="bar-fill" style={{ width: `${pct}%` }} />
