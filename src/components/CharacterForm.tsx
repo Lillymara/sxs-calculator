@@ -12,6 +12,8 @@ export interface Character {
   goalLevel: string;
   /** Count the free daily bed boost (2 hours of EXP) in the Level Timer. */
   bedBoost?: boolean;
+  /** Whether today's bed boost is still unused (counts it now). Defaults to true. */
+  bedToday?: boolean;
   /** Temporal Crystals to use now, 2 hours of EXP each. */
   crystals?: string;
 }
@@ -137,9 +139,18 @@ export function CharacterForm({ character, onChange, onReset, table, compact }: 
               <span className="boost-icon" aria-hidden>🛏️</span>
               <span>
                 Use my free daily bed boost
-                <small>2 hours of EXP once a day. Counts today's boost now, then one after each daily reset.</small>
+                <small>2 hours of EXP once a day, after each daily reset.</small>
               </span>
             </label>
+            {character.bedBoost && (
+              <label className="check boost-sub">
+                <input type="checkbox" checked={character.bedToday !== false} onChange={(e) => set("bedToday", e.target.checked)} />
+                <span>
+                  Include today's boost
+                  <small>Untick if you've already used it today.</small>
+                </span>
+              </label>
+            )}
             <label className="boost-row crystals">
               <img src={`${import.meta.env.BASE_URL}art/items/item_120.png`} alt="" className="boost-icon" />
               <span>

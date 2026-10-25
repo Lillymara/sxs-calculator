@@ -100,7 +100,11 @@ export default function App() {
   if (nextReset <= now) nextReset.setUTCDate(nextReset.getUTCDate() + 1);
   const boosts =
     bedHours || crystals
-      ? { nowHours: bedHours + crystals * 2, dailyHours: bedHours, hoursUntilReset: (nextReset.getTime() - now.getTime()) / 3_600_000 }
+      ? {
+          nowHours: (character.bedToday !== false ? bedHours : 0) + crystals * 2,
+          dailyHours: bedHours,
+          hoursUntilReset: (nextReset.getTime() - now.getTime()) / 3_600_000,
+        }
       : undefined;
 
   const goal = num(character.goalLevel);
