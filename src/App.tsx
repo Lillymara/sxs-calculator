@@ -98,6 +98,14 @@ export default function App() {
   const bedHours = character.bedBoost ? 2 : 0;
   const nextReset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), RESET_UTC_HOUR));
   if (nextReset <= now) nextReset.setUTCDate(nextReset.getUTCDate() + 1);
+  // The reset shown in the saved server's time zone (or the device's).
+  const resetLabel = (() => {
+    try {
+      return nextReset.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone: serverChoice.timezone || undefined, timeZoneName: "short" });
+    } catch {
+      return nextReset.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+    }
+  })();
   const boosts =
     bedHours || crystals
       ? {
@@ -202,6 +210,14 @@ export default function App() {
             onChange={setCharacter}
             onReset={() => setCharacter({ ...DEFAULT_CHARACTER, season: character.season })}
             table={table}
+            resetNote={
+              <>
+                Bed boosts are counted as used just after each daily reset:{" "}
+                <b>{resetLabel}</b>
+                {serverChoice.name ? <> ({serverChoice.name}).</> : <>. <a href="#/calendar">Pick your server</a> to see it in its time zone.</>}
+                {" "}Every server resets at 13:00 UTC.
+              </>
+            }
           />
           <Results character={character} outcome={outcome} now={now} />
         </main>

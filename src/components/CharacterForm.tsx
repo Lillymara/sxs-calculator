@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { SeasonTable } from "../lib/xp";
 import { seasons } from "../lib/xp";
 
@@ -25,9 +26,11 @@ interface Props {
   table: SeasonTable | undefined;
   /** Hide the name and goal-level fields (used inside the Season Planner). */
   compact?: boolean;
+  /** When bed boosts happen, shown under the boost options. */
+  resetNote?: ReactNode;
 }
 
-export function CharacterForm({ character, onChange, onReset, table, compact }: Props) {
+export function CharacterForm({ character, onChange, onReset, table, compact, resetNote }: Props) {
   const set = <K extends keyof Character>(key: K, value: Character[K]) =>
     onChange({ ...character, [key]: value });
 
@@ -147,7 +150,7 @@ export function CharacterForm({ character, onChange, onReset, table, compact }: 
                 <input type="checkbox" checked={character.bedToday !== false} onChange={(e) => set("bedToday", e.target.checked)} />
                 <span>
                   Include today's boost
-                  <small>Untick if you've already used it today.</small>
+                  <small>Untick if you've already used it since the last reset.</small>
                 </span>
               </label>
             )}
@@ -165,6 +168,7 @@ export function CharacterForm({ character, onChange, onReset, table, compact }: 
                 placeholder="0"
               />
             </label>
+            {resetNote && <p className="hint boost-note">{resetNote}</p>}
           </fieldset>
         )}
 
