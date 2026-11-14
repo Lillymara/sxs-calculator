@@ -2,24 +2,48 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Sword x Staff Tools has moved</title>
+<title>SxS Tools has moved to sxs.lmthings.com</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<link rel="canonical" href="https://lillymara.github.io/sxs-tools/">
-<script>
-  // Same page on the new address: keep the path after /sxs-calculator/, the query and the #/page.
-  (function () {
-    var rest = location.pathname.replace(/^\/sxs-calculator\/?/i, "");
-    location.replace("https://lillymara.github.io/sxs-tools/" + rest + location.search + location.hash);
-  })();
-</script>
-<meta http-equiv="refresh" content="0; url=https://lillymara.github.io/sxs-tools/">
+<link rel="canonical" href="https://sxs.lmthings.com/">
 <style>
   body { font-family: system-ui, sans-serif; background: #0c0f1c; color: #e9ebf5; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 16px; text-align: center; }
   a { color: #8b85ff; }
 </style>
 </head>
 <body>
-<p>Sword x Staff Tools has moved to <a href="https://lillymara.github.io/sxs-tools/">lillymara.github.io/sxs-tools</a>.<br>Taking you there…</p>
+<p>SxS Tools has moved to <a id="go" href="https://sxs.lmthings.com/">sxs.lmthings.com</a>.<br>Bringing your saved data along…</p>
+<script>
+  // This page lives on the old lillymara.github.io address, where players' saved inputs are kept.
+  // It hands them to the new address in the link's #fragment (never sent to a server); the new site
+  // saves only what it doesn't already have, then removes the data from the address bar.
+  (async function () {
+    var target = "https://sxs.lmthings.com/";
+    // Keep the page they asked for: the path after the old folder, and the #/route.
+    var rest = location.pathname.replace(/^\/(sxs-calculator|sxs-tools)\/?/i, "").replace(/^index\.html$/i, "");
+    var hash = location.hash && location.hash.length > 1 ? location.hash : "#/";
+    try {
+      // The old address's offline worker would otherwise keep serving the old site.
+      var regs = navigator.serviceWorker ? await navigator.serviceWorker.getRegistrations() : [];
+      for (var r of regs) await r.unregister();
+    } catch (e) {}
+    var data = {}, n = 0;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf("sxs.") === 0 && k !== "sxs.debug.cart") { data[k] = localStorage.getItem(k); n++; }
+      }
+    } catch (e) {}
+    if (n) {
+      var bytes = new TextEncoder().encode(JSON.stringify(data)), bin = "";
+      bytes.forEach(function (c) { bin += String.fromCharCode(c); });
+      var enc = btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      hash += (hash.indexOf("?") >= 0 ? "&" : "?") + "lmimport=" + enc;
+    }
+    var url = target + rest + hash;
+    document.getElementById("go").href = url;
+    location.replace(url);
+  })();
+</script>
 </body>
 </html>
